@@ -1,0 +1,462 @@
+import tkinter as tk
+from tkinter import*
+from tkinter import messagebox
+import psycopg2
+
+# Classe principal da aplicação
+class PetControlApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("PetControl")
+        img=PhotoImage(file="F:\\estudo Python\\raçao.png")
+        self.root.iconphoto(False,img)
+        self.frame_login = tk.Frame(root)
+        self.frame_login.grid(row=0, column=0, padx=20, pady=20)
+        self.setup_login_frame()
+
+    # Configuração do frame de login
+    def setup_login_frame(self):
+        tk.Label(self.frame_login, text="Usuário:").grid(row=0, column=0, padx=10, pady=10, sticky='e')
+        tk.Label(self.frame_login, text="Senha:").grid(row=1, column=0, padx=10, pady=10, sticky='e')
+        self.entry_usuario = tk.Entry(self.frame_login)
+        self.entry_senha = tk.Entry(self.frame_login, show='*')
+        self.entry_usuario.grid(row=0, column=1, padx=10, pady=10)
+        self.entry_senha.grid(row=1, column=1, padx=10, pady=10)
+        tk.Button(self.frame_login, text="Entrar", command=self.login).grid(row=2, column=0, columnspan=2, pady=10)
+
+    # Função de login
+    def login(self):
+        usuario = self.entry_usuario.get()
+        senha = self.entry_senha.get()
+        if usuario == 'admin' and senha == 'admin':  # Substitua pela validação real
+            self.frame_login.destroy()
+            self.show_main_interface()
+        else:
+            messagebox.showerror("Erro", "Usuário ou senha incorretos")
+
+    # Exibe a interface principal após login
+    def show_main_interface(self):
+        self.frame_main = tk.Frame(self.root)
+        self.frame_main.grid(row=0, column=0, padx=20, pady=20)
+        self.setup_main_interface()
+
+    # Configuração da interface principal
+    def setup_main_interface(self):
+        tk.Button(self.frame_main, text="Cadastrar Produtos", command=self.cadastrar_produtos).grid(row=0, column=0, padx=10, pady=10)
+        tk.Button(self.frame_main, text="Registrar Vendas", command=self.registrar_vendas).grid(row=0, column=1, padx=10, pady=10)
+        tk.Button(self.frame_main, text="Registrar Compras", command=self.registrar_compras).grid(row=0, column=2, padx=10, pady=10)
+        tk.Button(self.frame_main, text="Gerenciar Funcionários", command=self.gerenciar_funcionarios).grid(row=1, column=0, padx=10, pady=10)
+        tk.Button(self.frame_main, text="Controlar Finanças", command=self.controlar_financas).grid(row=1, column=1, padx=10, pady=10)
+        
+        self.frame_produtos = tk.Frame(self.frame_main)
+        self.frame_produtos.grid(row=2, column=0, columnspan=3, pady=10, sticky='nsew')
+        self.frame_funcionarios = tk.Frame(self.frame_main)
+        self.frame_funcionarios.grid(row=3, column=0, columnspan=3, pady=10, sticky='nsew')
+        
+        self.atualizar_lista_produtos()
+        self.atualizar_lista_funcionarios()
+
+    # Conecta ao banco de dados
+    def conectar_banco(self):
+        self.conn = psycopg2.connect(dbname='PetControlApp', user='postgres', password='piter', host='localhost')
+        self.c = self.conn.cursor()
+
+    # Desconecta do banco de dados
+    def desconectar_banco(self):
+        if self.c:
+            self.c.close()
+        if self.conn:
+            self.conn.close()
+
+  
+
+#/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     # Atualiza a lista de produtos
+    def atualizar_lista_produtos(self):
+        for widget in self.frame_produtos.winfo_children():
+            widget.destroy()
+        self.conectar_banco()
+        try:
+            self.c.execute('SELECT id, nome, preco, quantidade FROM produtos')
+            produtos = self.c.fetchall()
+            tk.Label(self.frame_produtos, text="ID").grid(row=0, column=0, padx=10, pady=5)
+            tk.Label(self.frame_produtos, text="Nome").grid(row=0, column=1, padx=10, pady=5)
+            tk.Label(self.frame_produtos, text="Preço").grid(row=0, column=2, padx=10, pady=5)
+            tk.Label(self.frame_produtos, text="Quantidade").grid(row=0, column=3, padx=10, pady=5)
+            for index, produto in enumerate(produtos):
+                tk.Label(self.frame_produtos, text=produto[0]).grid(row=index+1, column=0, padx=10, pady=5)
+                tk.Label(self.frame_produtos, text=produto[1]).grid(row=index+1, column=1, padx=10, pady=5)
+                tk.Label(self.frame_produtos, text=produto[2]).grid(row=index+1, column=2, padx=10, pady=5)
+                tk.Label(self.frame_produtos, text=produto[3]).grid(row=index+1, column=3, padx=10, pady=5)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao listar produtos: {e}")
+        finally:
+            self.desconectar_banco()
+
+   
+   # Cadastra produtos
+    def cadastrar_produtos(self):
+        top = tk.Toplevel(self.root)
+        top.title("Cadastrar Produtos")
+        img=PhotoImage(file="F:\\estudo Python\\raçao.png")
+        top.iconphoto(False,img)
+        top.geometry("280x200")
+        tk.Label(top, text="Aqui você pode cadastrar produtos.").grid(row=0, column=0, columnspan=2, padx=10, pady=10)
+        
+        tk.Label(top, text="Nome:").grid(row=1, column=0, padx=10, pady=10, sticky='e')
+        tk.Label(top, text="Preço:").grid(row=2, column=0, padx=10, pady=10, sticky='e')
+        tk.Label(top, text="Quantidade:").grid(row=3, column=0, padx=10, pady=10, sticky='e')
+
+        entry_nome = tk.Entry(top)
+        entry_preco = tk.Entry(top)
+        entry_quantidade = tk.Entry(top)
+        entry_nome.grid(row=1, column=1, padx=10, pady=10)
+        entry_preco.grid(row=2, column=1, padx=10, pady=10)
+        entry_quantidade.grid(row=3, column=1, padx=10, pady=10)
+
+        tk.Button(top, text="Cadastrar", command=lambda: self.cadastrar_produto(entry_nome.get(), entry_preco.get(), entry_quantidade.get())).grid(row=4, column=1, columnspan=2, pady=10)
+
+    def cadastrar_produto(self, nome, preco, quantidade):
+        try:
+            self.conectar_banco()
+            self.c.execute('INSERT INTO produtos (nome, preco, quantidade) VALUES (%s, %s, %s)', (nome, preco, quantidade))
+            self.conn.commit()
+            messagebox.showinfo("Sucesso", "Produto cadastrado com sucesso!")
+            self.atualizar_lista_produtos()
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao cadastrar produto: {e}")
+        finally:
+            self.desconectar_banco()
+#/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    # Registrar vendas        
+    def registrar_vendas(self):
+        top = tk.Toplevel(self.root)
+        top.title("Registrar Vendas")
+        
+        tk.Label(top, text="Nome do Produto:").grid(row=0, column=0, padx=10, pady=10)
+        tk.Label(top, text="Quantidade:").grid(row=1, column=0, padx=10, pady=10)
+
+        entry_nome_produto = tk.Entry(top)
+        entry_quantidade = tk.Entry(top)
+
+        entry_nome_produto.grid(row=0, column=1, padx=10, pady=10)
+        entry_quantidade.grid(row=1, column=1, padx=10, pady=10)
+
+        def registrar_venda():
+            nome_produto = entry_nome_produto.get()
+            quantidade_str = entry_quantidade.get()
+
+            if not nome_produto or not quantidade_str:
+                messagebox.showerror("Erro", "Todos os campos devem ser preenchidos.")
+                return
+
+            try:
+                quantidade = int(quantidade_str)
+            except ValueError:
+                messagebox.showerror("Erro", "Quantidade deve ser um número inteiro.")
+                return
+
+            self.conectar_banco()
+            try:
+                self.c.execute('SELECT id, preco, quantidade FROM produtos WHERE nome = %s', (nome_produto,))
+                produto = self.c.fetchone()
+                if produto:
+                    produto_id, preco, quantidade_estoque = produto
+                    if quantidade_estoque >= quantidade:
+                        total = preco * quantidade
+                        # Registra a venda
+                        self.c.execute('INSERT INTO vendas (produto_id, quantidade, total) VALUES (%s, %s, %s)', (produto_id, quantidade, total))
+                        # Atualiza a quantidade do produto no estoque
+                        self.c.execute('UPDATE produtos SET quantidade = quantidade - %s WHERE id = %s', (quantidade, produto_id))
+                        self.conn.commit()
+                        messagebox.showinfo("Sucesso", "Venda registrada com sucesso!")
+                        self.registrar_financas(total, 'venda')  # Registra a receita
+                        self.atualizar_lista_produtos()  # Atualiza a lista de produtos
+                    else:
+                        messagebox.showwarning("Aviso", "Quantidade insuficiente!")
+                else:
+                    messagebox.showwarning("Aviso", "Produto não encontrado!")
+            except Exception as e:
+                messagebox.showerror("Erro", f"Erro ao registrar venda: {e}")
+            finally:
+                self.desconectar_banco()
+                entry_nome_produto.delete(0, tk.END)
+                entry_quantidade.delete(0, tk.END)
+
+        tk.Button(top, text="Registrar Venda", command=registrar_venda).grid(row=2, column=0, columnspan=2, pady=10)
+
+        
+        
+#/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+    # Registra compras
+    def registrar_compras(self):
+        top = tk.Toplevel(self.root)
+        top.title("Registrar Compras")
+        
+        tk.Label(top, text="Nome do Produto:").grid(row=0, column=0, padx=10, pady=10)
+        tk.Label(top, text="Quantidade:").grid(row=1, column=0, padx=10, pady=10)
+
+        entry_nome_produto = tk.Entry(top)
+        entry_quantidade = tk.Entry(top)
+
+        entry_nome_produto.grid(row=0, column=1, padx=10, pady=10)
+        entry_quantidade.grid(row=1, column=1, padx=10, pady=10)
+
+        def registrar_compra():
+            nome_produto = entry_nome_produto.get()
+            quantidade_str = entry_quantidade.get()
+
+            if not nome_produto or not quantidade_str:
+                messagebox.showerror("Erro", "Todos os campos devem ser preenchidos.")
+                return
+
+            try:
+                quantidade = int(quantidade_str)
+            except ValueError:
+                messagebox.showerror("Erro", "Quantidade deve ser um número inteiro.")
+                return
+
+            self.conectar_banco()
+            try:
+                self.c.execute('SELECT id, preco, quantidade FROM produtos WHERE nome = %s', (nome_produto,))
+                produto = self.c.fetchone()
+                if produto:
+                    produto_id, preco, quantidade_estoque = produto
+                    # Atualiza a quantidade do produto no estoque
+                    self.c.execute('UPDATE produtos SET quantidade = quantidade + %s WHERE id = %s', (quantidade, produto_id))
+                    self.conn.commit()
+
+                    # Calcula o total da compra e registra no controle financeiro
+                    valor_total_compra = quantidade * preco
+                    self.registrar_financas(valor_total_compra, 'compra')  # Chama função de controle de finanças
+
+                    messagebox.showinfo("Sucesso", "Compra registrada com sucesso!")
+                    self.atualizar_lista_produtos()
+                else:
+                    messagebox.showerror("Erro", "Produto não encontrado!")
+            except Exception as e:
+                messagebox.showerror("Erro", f"Erro ao registrar compra: {e}")
+            finally:
+                self.desconectar_banco()
+                entry_nome_produto.delete(0, tk.END)
+                entry_quantidade.delete(0, tk.END)
+
+        tk.Button(top, text="Registrar Compra", command=registrar_compra).grid(row=2, column=0, columnspan=2, pady=10)
+        
+#/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     # Atualiza a lista de funcionários
+    def atualizar_lista_funcionarios(self):
+        for widget in self.frame_funcionarios.winfo_children():
+            widget.destroy()
+        self.conectar_banco()
+        try:
+            self.c.execute('SELECT id, nome, endereco, telefone, cargo FROM funcionarios')
+            funcionarios = self.c.fetchall()
+            tk.Label(self.frame_funcionarios, text="ID").grid(row=0, column=0, padx=10, pady=5)
+            tk.Label(self.frame_funcionarios, text="Nome").grid(row=0, column=1, padx=10, pady=5)
+            tk.Label(self.frame_funcionarios, text="Endereço").grid(row=0, column=2, padx=10, pady=5)
+            tk.Label(self.frame_funcionarios, text="Telefone").grid(row=0, column=3, padx=10, pady=5)
+            tk.Label(self.frame_funcionarios, text="Cargo").grid(row=0, column=4, padx=10, pady=5)
+            for index, funcionario in enumerate(funcionarios):
+                tk.Label(self.frame_funcionarios, text=funcionario[0]).grid(row=index+1, column=0, padx=10, pady=5)
+                tk.Label(self.frame_funcionarios, text=funcionario[1]).grid(row=index+1, column=1, padx=10, pady=5)
+                tk.Label(self.frame_funcionarios, text=funcionario[2]).grid(row=index+1, column=2, padx=10, pady=5)
+                tk.Label(self.frame_funcionarios, text=funcionario[3]).grid(row=index+1, column=3, padx=10, pady=5)
+                tk.Label(self.frame_funcionarios, text=funcionario[4]).grid(row=index+1, column=4, padx=10, pady=5)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao listar funcionários: {e}")
+        finally:
+            self.desconectar_banco()
+
+   
+   # Gerencia funcionários
+    def gerenciar_funcionarios(self):
+        top = tk.Toplevel(self.root)
+        top.title("Gerenciar Funcionários")
+        self.setup_gerenciar_funcionarios(top)
+
+  # Configuração do gerenciamento de funcionários
+    def setup_gerenciar_funcionarios(self, top):
+        tk.Label(top, text="Nome:").grid(row=0, column=0, padx=10, pady=10)
+        tk.Label(top, text="Telefone:").grid(row=1, column=0, padx=10, pady=10)
+        tk.Label(top, text="Cargo:").grid(row=2, column=0, padx=10, pady=10)
+        tk.Label(top, text="Endereço:").grid(row=3, column=0, padx=10, pady=10)
+        tk.Label(top, text="Email:").grid(row=4, column=0, padx=10, pady=10)
+        
+        entry_nome = tk.Entry(top)
+        entry_telefone = tk.Entry(top)
+        entry_cargo = tk.Entry(top)
+        entry_endereco = tk.Entry(top)
+        entry_email = tk.Entry(top)
+        
+        entry_nome.grid(row=0, column=1, padx=10, pady=10)
+        entry_telefone.grid(row=1, column=1, padx=10, pady=10)
+        entry_cargo.grid(row=2, column=1, padx=10, pady=10)
+        entry_endereco.grid(row=3, column=1, padx=10, pady=10)
+        entry_email.grid(row=4, column=1, padx=10, pady=10)
+        
+        tk.Button(top, text="Adicionar Funcionário", command=lambda: self.adicionar_funcionario(entry_nome, entry_telefone, entry_cargo, entry_endereco, entry_email)).grid(row=5, column=0, columnspan=2, pady=10)
+
+        # Cria um dropdown para selecionar o funcionário a ser removido
+        tk.Label(top, text="Selecione Funcionário:").grid(row=6, column=0, padx=10, pady=10)
+        self.dropdown_funcionarios = tk.StringVar(top)
+        self.dropdown_funcionarios.set("Selecione")
+        self.menu_funcionarios = tk.OptionMenu(top, self.dropdown_funcionarios, [])
+        self.menu_funcionarios.grid(row=6, column=1, padx=10, pady=10)
+        
+        tk.Button(top, text="Remover Funcionário", command=self.remover_funcionario_selecionado).grid(row=7, column=0, columnspan=2, pady=10)
+        
+        # Atualiza o dropdown com a lista de funcionários
+        self.atualizar_dropdown_funcionarios()
+
+    # Atualiza o dropdown com a lista de funcionários
+    def atualizar_dropdown_funcionarios(self):
+        self.conectar_banco()
+        try:
+            self.c.execute('SELECT id, nome FROM funcionarios')
+            funcionarios = self.c.fetchall()
+            menu = self.menu_funcionarios["menu"]
+            menu.delete(0, "end")
+            self.dropdown_funcionarios.set("Selecione")
+            for funcionario in funcionarios:
+                menu.add_command(
+                    label=funcionario[1], 
+                    command=lambda value=funcionario[0]: self.dropdown_funcionarios.set(value)
+                )
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao atualizar lista de funcionários: {e}")
+        finally:
+            self.desconectar_banco()
+
+
+    # Remove o funcionário selecionado do dropdown
+    def remover_funcionario_selecionado(self):
+        id_funcionario = self.dropdown_funcionarios.get()
+        if id_funcionario != "Selecione":
+            try:
+                # Convertendo o ID para inteiro, caso não consiga converter lança uma exceção
+                id_funcionario = int(id_funcionario)
+                self.remover_funcionario(id_funcionario)
+            except ValueError:
+                messagebox.showwarning("Aviso", "ID do funcionário selecionado é inválido")
+        else:
+            messagebox.showwarning("Aviso", "Selecione um funcionário para remover")
+
+
+   # Adiciona um funcionário ao banco de dados
+    def adicionar_funcionario(self, entry_nome, entry_telefone, entry_cargo, entry_endereco, entry_email):
+        nome = entry_nome.get()
+        telefone = entry_telefone.get()
+        cargo = entry_cargo.get()
+        endereco = entry_endereco.get()
+        email = entry_email.get()
+        if nome and telefone and cargo and endereco and email:
+            self.conectar_banco()
+            try:
+                self.c.execute('INSERT INTO funcionarios (nome, telefone, cargo, endereco, email) VALUES (%s, %s, %s, %s, %s)',
+                               (nome, telefone, cargo, endereco, email))
+                self.conn.commit()
+                messagebox.showinfo("Sucesso", "Funcionário adicionado com sucesso!")
+                self.atualizar_lista_funcionarios()
+            except Exception as e:
+                messagebox.showerror("Erro", f"Erro ao adicionar funcionário: {e}")
+            finally:
+                self.desconectar_banco()
+        else:
+            messagebox.showwarning("Aviso", "Preencha todos os campos")
+            
+    # Remove um funcionário do banco de dados
+    def remover_funcionario(self, id_funcionario):
+        if id_funcionario:
+            self.conectar_banco()
+            try:
+                self.c.execute('DELETE FROM funcionarios WHERE id = %s', (id_funcionario,))
+                self.conn.commit()
+                messagebox.showinfo("Sucesso", "Funcionário removido com sucesso!")
+                self.atualizar_lista_funcionarios()
+            except Exception as e:
+                messagebox.showerror("Erro", f"Erro ao remover funcionário: {e}")
+            finally:
+                self.desconectar_banco()
+        else:
+            messagebox.showwarning("Aviso", "Selecione um funcionário para remover")
+
+#/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    # Configuração do controle de finanças
+    def controlar_financas(self):
+        top = tk.Toplevel(self.root)
+        top.title("Controle de Finanças")
+        img=PhotoImage(file="F:\\estudo Python\\raçao.png")
+        top.iconphoto(False,img)
+        top.geometry("280x200")
+        
+        # Labels para exibir receitas, despesas e saldo
+        self.label_receitas = tk.Label(top, text="Total de Receitas: R$ 0.00")
+        self.label_receitas.grid(row=0, column=0, padx=20, pady=10)
+
+        self.label_despesas = tk.Label(top, text="Total de Despesas: R$ 0.00")
+        self.label_despesas.grid(row=1, column=0, padx=20, pady=10)
+
+        self.label_saldo = tk.Label(top, text="Saldo Atual: R$ 0.00")
+        self.label_saldo.grid(row=2, column=0, padx=20, pady=10)
+
+        tk.Button(top, text="Atualizar Finanças", command=self.atualizar_controle_financeiro).grid(row=3, column=0, pady=10)
+        
+        # Atualiza as finanças ao abrir a tela
+        self.atualizar_controle_financeiro()
+
+
+    def registrar_financas(self, valor, tipo_transacao):
+        self.conectar_banco()
+        try:
+            if tipo_transacao == 'compra':
+                # Registra o valor da compra como despesa no banco de dados
+                self.c.execute('INSERT INTO controle_financas (tipo, valor) VALUES (%s, %s)', ('Despesa', valor))
+            elif tipo_transacao == 'venda':
+                # Registra o valor da venda como receita no banco de dados
+                self.c.execute('INSERT INTO controle_financas (tipo, valor) VALUES (%s, %s)', ('Receita', valor))
+            
+            self.conn.commit()
+            self.atualizar_controle_financeiro()
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao registrar finanças: {e}")
+        finally:
+            self.desconectar_banco()
+
+    def atualizar_controle_financeiro(self):
+        if hasattr(self, 'label_receitas') and hasattr(self, 'label_despesas') and hasattr(self, 'label_saldo'):
+            try:
+                self.conectar_banco()  # Certifique-se de que a conexão e o cursor estejam disponíveis
+                # Calcula o total de receitas e despesas
+                self.c.execute('SELECT SUM(valor) FROM controle_financas WHERE tipo = %s', ('Receita',))
+                total_receitas = self.c.fetchone()[0] or 0
+                
+                self.c.execute('SELECT SUM(valor) FROM controle_financas WHERE tipo = %s', ('Despesa',))
+                total_despesas = self.c.fetchone()[0] or 0
+
+                saldo = total_receitas - total_despesas
+
+                # Atualiza as labels na interface
+                self.label_receitas.config(text=f"Total de Receitas: R$ {total_receitas:.2f}")
+                self.label_despesas.config(text=f"Total de Despesas: R$ {total_despesas:.2f}")
+                self.label_saldo.config(text=f"Saldo Atual: R$ {saldo:.2f}")
+            except Exception as e:
+                messagebox.showerror("Erro", f"Erro ao atualizar controle financeiro: {e}")
+            finally:
+                self.desconectar_banco()  # Certifique-se de que a conexão e o cursor sejam fechados
+        else:
+            messagebox.showwarning("Aviso", "Widgets de controle financeiro não encontrados.")
+
+
+
+
+
+# Inicializa a aplicação
+root = tk.Tk()
+app = PetControlApp(root)
+root.mainloop()
+
+
