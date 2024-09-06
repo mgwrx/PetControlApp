@@ -42,9 +42,10 @@ CREATE TABLE compras (
 );
 
 -- Tabela de Controle Financeiro
-CREATE TABLE controle_financeiro (
+CREATE TABLE controle_financas (
     id SERIAL PRIMARY KEY,
-    tipo VARCHAR(50) NOT NULL, -- Ex: Entrada, Saída
+    tipo VARCHAR(50) NOT NULL, -- 'receita' ou 'despesa'
     valor DECIMAL(10, 2) NOT NULL,
-    data_transacao DATE NOT NULL DEFAULT CURRENT_DATE
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
