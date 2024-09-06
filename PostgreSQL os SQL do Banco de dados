@@ -7,39 +7,43 @@ CREATE DATABASE petcontrol;
 -- Tabela de Produtos
 CREATE TABLE produtos (
     id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL,
+    nome VARCHAR(100) NOT NULL,
     preco DECIMAL(10, 2) NOT NULL,
-    quantidade INT NOT NULL,
-    data_cadastro DATE NOT NULL DEFAULT CURRENT_DATE,
-    data_vencimento DATE
+    quantidade INTEGER NOT NULL
 );
 
 -- Tabela de Funcionários
 CREATE TABLE funcionarios (
     id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL,
-    endereco VARCHAR(255),
-    telefone VARCHAR(20),
-    cargo VARCHAR(100),
-    data_contratacao DATE NOT NULL DEFAULT CURRENT_DATE
+    nome VARCHAR(100) NOT NULL,
+    telefone VARCHAR(20) NOT NULL,
+    cargo VARCHAR(50) NOT NULL,
+    endereco VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL
 );
+
+
+
 
 -- Tabela de Vendas
 CREATE TABLE vendas (
     id SERIAL PRIMARY KEY,
-    produto_id INT REFERENCES produtos(id),
-    quantidade INT NOT NULL,
-    total DECIMAL(10, 2) GENERATED ALWAYS AS (quantidade * (SELECT preco FROM produtos WHERE produtos.id = produto_id)) STORED,
-    data_venda DATE NOT NULL DEFAULT CURRENT_DATE
+    produto_id INTEGER REFERENCES produtos(id),
+    quantidade INTEGER NOT NULL,
+    total DECIMAL(10, 2) NOT NULL,
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 -- Tabela de Compras
 CREATE TABLE compras (
     id SERIAL PRIMARY KEY,
-    produto_id INT REFERENCES produtos(id),
-    quantidade INT NOT NULL,
-    data_compra DATE NOT NULL DEFAULT CURRENT_DATE
+    produto_id INTEGER REFERENCES produtos(id),
+    quantidade INTEGER NOT NULL,
+    total DECIMAL(10, 2) NOT NULL,
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 -- Tabela de Controle Financeiro
 CREATE TABLE controle_financas (
