@@ -386,13 +386,14 @@ class PetControlApp:
 
 
     # Configuração do controle de finanças
+    
     def controlar_financas(self):
         top = tk.Toplevel(self.root)
         top.title("Controle de Finanças")
-        img=PhotoImage(file="F:\\estudo Python\\raçao.png")
-        top.iconphoto(False,img)
+        img = PhotoImage(file="F:\\estudo Python\\raçao.png")
+        top.iconphoto(False, img)
         top.geometry("280x200")
-        
+
         # Labels para exibir receitas, despesas e saldo
         self.label_receitas = tk.Label(top, text="Total de Receitas: R$ 0.00")
         self.label_receitas.grid(row=0, column=0, padx=20, pady=10)
@@ -404,10 +405,9 @@ class PetControlApp:
         self.label_saldo.grid(row=2, column=0, padx=20, pady=10)
 
         tk.Button(top, text="Atualizar Finanças", command=self.atualizar_controle_financeiro).grid(row=3, column=0, pady=10)
-        
+
         # Atualiza as finanças ao abrir a tela
         self.atualizar_controle_financeiro()
-
 
     def registrar_financas(self, valor, tipo_transacao):
         self.conectar_banco()
@@ -430,6 +430,7 @@ class PetControlApp:
         if hasattr(self, 'label_receitas') and hasattr(self, 'label_despesas') and hasattr(self, 'label_saldo'):
             try:
                 self.conectar_banco()  # Certifique-se de que a conexão e o cursor estejam disponíveis
+
                 # Calcula o total de receitas e despesas
                 self.c.execute('SELECT SUM(valor) FROM controle_financas WHERE tipo = %s', ('Receita',))
                 total_receitas = self.c.fetchone()[0] or 0
@@ -449,6 +450,7 @@ class PetControlApp:
                 self.desconectar_banco()  # Certifique-se de que a conexão e o cursor sejam fechados
         else:
             messagebox.showwarning("Aviso", "Widgets de controle financeiro não encontrados.")
+
 
 
 
